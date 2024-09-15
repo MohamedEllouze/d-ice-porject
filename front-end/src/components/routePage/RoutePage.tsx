@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useContext, useEffect, useState } from "react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Grid2, TextField, Typography } from "@mui/material";
@@ -22,10 +22,16 @@ import {
   useRoute,
   useUpdateRoute,
 } from "../../hooks/route.query.ts";
+import { MyContext } from "../../App.js";
 
 export default function AddRoutePage() {
   let { routeId } = useParams();
-  const { data, isFetched, refetch: refetchWaypointList } = useWaypoints();
+  const navigate = useNavigate();
+
+  const { waypointsList, setWaypointsList, setSelectedRouteId } =
+    useContext(MyContext);
+
+  const { refetch: refetchWaypointList } = useWaypoints();
   const {
     mutate: createWaypoint,
     isSuccess: createWaypointSuccess,
@@ -33,6 +39,7 @@ export default function AddRoutePage() {
   } = useCreateWaypoint();
   const { mutate: deleteWaypoint } = useDeleteWaypoint();
   const { mutate: updateWaypoint } = useUpdateWaypoint();
+
   const {
     mutate: createRoute,
     isLoading: createRouteLoading,
@@ -57,9 +64,6 @@ export default function AddRoutePage() {
     latitude: 0,
     longitude: 0,
   });
-  const [waypointsList, setWaypointsList] = useState<IWaypoint[]>([]);
-
-  const navigate = useNavigate();
 
   // Add route function
   const addRoute = () => {
@@ -75,12 +79,11 @@ export default function AddRoutePage() {
       id: routeId,
       updatedRoute: {
         name: routeById.name,
-        waypoints: waypointsList.map((el) => el._id),
+        waypoints: waypointsList.map((el: IWaypoint) => el._id),
       },
     });
   };
 
-  // Handle edit waypoints input change
   const changeWaypoints = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -133,6 +136,9 @@ export default function AddRoutePage() {
   useEffect(() => {
     if (routeByIdIsSuccess) {
       setWaypointsList(routeById?.waypoints);
+    } else {
+      setWaypointsList([]);
+      setSelectedRouteId("");
     }
   }, [routeByIdFetched]);
 
@@ -144,13 +150,13 @@ export default function AddRoutePage() {
 
   const returnFunction = () => {
     navigate(-1);
-    setWaypointsList([]);
     setWaypoint({
       name: "",
       latitude: 0,
       longitude: 0,
     });
   };
+
   return (
     <Grid2 container>
       <Grid2 style={{ display: "flex", alignItems: "center" }}>

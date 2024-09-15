@@ -2,9 +2,15 @@ import React, { useEffect, useState } from "react";
 import { Edit, Delete, Add } from "@mui/icons-material";
 import { TextField, Button, Grid2, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import { useDeleteRoute, useRoutes } from "../hooks/route.query.ts";
+import { useDeleteRoute, useRoutes } from "../../hooks/route.query.ts";
 
 const RoutesList = ({ setSelectedRouteId }) => {
+  const navigate = useNavigate();
+
+  const [showInput, setShowInput] = useState(false);
+  const [routeName, setRouteName] = useState("");
+  const [routeNameList, setRouteNameList] = useState([]);
+
   const {
     data: routesListData,
     isFetched,
@@ -12,18 +18,7 @@ const RoutesList = ({ setSelectedRouteId }) => {
   } = useRoutes();
   const { mutate: deleteRoute } = useDeleteRoute();
 
-  const [showInput, setShowInput] = useState(false);
-  const [routeName, setRouteName] = useState("");
-  const [routeNameList, setRouteNameList] = useState([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isFetched) {
-      setRouteNameList(routesListData || []);
-    }
-  }, [routesListData, isFetched]);
-
-  const changeRouteName = (e) => {
+  const changeRouteName = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRouteName(e.target.value);
   };
 
@@ -39,6 +34,13 @@ const RoutesList = ({ setSelectedRouteId }) => {
       onSuccess: () => refetchRouteList(), // Refetch routes after deleting
     });
   };
+
+  useEffect(() => {
+    if (isFetched) {
+      setRouteNameList(routesListData || []);
+      setSelectedRouteId(routesListData[0]._id);
+    }
+  }, [routesListData, isFetched]);
 
   return (
     <div style={{ padding: "10px" }}>
